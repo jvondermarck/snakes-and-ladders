@@ -5,20 +5,20 @@
 #include <stdbool.h>
 
 // Constant of the boardgame min and max size
-#define MIN_SIZE 32
-#define MAX_SIZE 64
+#define MIN_SIZE 1
+#define MAX_SIZE 10
 #define COLUMNS 8
 
 struct snake {
-    int index_head;
-    int index_foot;
+    struct square *index_head;
+    struct square *index_foot;
     int length;
     struct snake *next;
 };
 
 struct ladder {
-    int index_head;
-    int index_foot;
+    struct square *index_head;
+    struct square *index_foot;
     int length;
     struct ladder *next;
 };
@@ -26,6 +26,8 @@ struct ladder {
 struct square {
     int index;
     bool isPlayer; // false = not here and true = on this square
+    struct snake *isSnake;
+    struct ladder *isLadder;
     struct square *next; // if next = null -> we're on the last square
 };
 
@@ -46,29 +48,29 @@ struct square *init_square() {
 
 // create a boardgame randomly of size 32 to 64
 struct boardgame *create_boardgame(){
-    srand(time(NULL));
-
     int mod = (MAX_SIZE-MIN_SIZE)+1; // to be between 32 and 64 
     int length = rand() % mod + MIN_SIZE; // between 32 and 64 randomly
 
     struct boardgame *p_boardgame = malloc(sizeof(struct boardgame));
-    p_boardgame->length = 36;
+    p_boardgame->length = length;
 
-    // Taking care of squares now :
     // linked list : creation of the list head of square
     struct square *head_square = init_square();
     p_boardgame->head_square = malloc(sizeof(struct square));
     p_boardgame->head_square = head_square;
 
+    // Creation of N squares depending of the length of the gameboard drawn at random
     p_boardgame->square = malloc(length * sizeof(struct square));
     for(int i=0; i<p_boardgame->length; i++){
         struct square *p_square = malloc(sizeof(struct square));
-        p_boardgame->square[i] = *p_square;
-
-        p_boardgame->square[i].index = i+1;
-        if(i==0) p_boardgame->square[i].isPlayer = true;
+        p_boardgame->square[i] = *p_square; // Init square
+        p_boardgame->square[i].index = i+1; // Number of the square
+        p_boardgame->square[i].isSnake = NULL; // Init to NULL because it doesn't have a snake yet
+        p_boardgame->square[i].isLadder = NULL;
+        p_boardgame->square[i].next = NULL; // Next square as null 
+        if(i==0) p_boardgame->square[i].isPlayer = true; // We place the player at the 1st square
         else p_boardgame->square[i].isPlayer = false;
-        p_boardgame->square[i].next = NULL;
+        
     }
 
     // We make sure that each square have a next square (expect the last one)
@@ -113,18 +115,56 @@ int roll_die(){
     return result;
 }
 
-struct snake *addSnake(struct snake *head_snake) {
+// return a random number between 1 to 10 for the length between the head to the bottom of a snake/tail
+int random_length(int range){
+    int result = rand() % range + 1; // between 10 and 1
+    return result;
+}
+
+struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
     // create a space in memory for a new p_snake
     struct snake *p_snake = malloc(sizeof(struct snake));
+    struct square *cursor_square = boardgame->head_square;
 
-    // esnure the data field of the node points to the data
+    // Taking care of looking a place to put on a square to put the head of snake
+    int random_head, random_foot = 0;
+    while(1) {
+       random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
+       while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
+            cursor_square = cursor_square->next;
+        }
+       if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+           cursor_square->isSnake = p_snake;
+           cursor_square->isSnake->index_head = cursor_square;
+           break;
+       }
+    }
+
+    // Look for a place to put the foot of a snake
+    cursor_square = boardgame->head_square; // we re-init our variable
+    while(1) {
+       if(random_head<=10) {
+           random_foot = 1 + rand() % random_head-1;
+       } else {
+           random_foot = random_head-10 + rand() % 10; // from square head-1 to -10
+       }
+       
+       while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
+            cursor_square = cursor_square->next;
+        }
+       if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+           cursor_square->isSnake = p_snake; // we point to our snake
+           cursor_square->isSnake->index_foot = cursor_square;
+           break;
+       }
+    }
+
+    printf("Snake : Head = %d and Foot = %d\n", p_snake->index_head->index, p_snake->index_foot->index);
+    
+    p_snake->length = random_head-random_foot;
     p_snake->next = NULL;
-    p_snake->index_head = 0;
-    p_snake->index_foot = 0;
-    p_snake->length = rand() % 10 + 1;
 
-    // we move the cursor
-    struct snake *cursor = head_snake;
+    struct snake *cursor = head_snake; // init cursor to move different each square
     while(cursor->next != NULL){
         cursor = cursor->next;
     }
@@ -134,7 +174,7 @@ struct snake *addSnake(struct snake *head_snake) {
     return p_snake;
 }
 
-struct ladder *addLadder(struct ladder *head_ladder) {
+struct ladder *addLadder(struct ladder *head_ladder, struct boardgame *boardgame) {
     // create a space in memory for a new p_ladder
     struct ladder *p_ladder = malloc(sizeof(struct ladder));
 
@@ -157,12 +197,16 @@ struct ladder *addLadder(struct ladder *head_ladder) {
 
 struct snake *init_snake(){
     struct snake *p_snake = malloc(sizeof(struct snake));
+    p_snake->index_head = NULL;
+    p_snake->index_foot = NULL;
     p_snake->next = NULL;
     return p_snake;
 }
 
 struct ladder *init_ladder(){
     struct ladder *p_ladder = malloc(sizeof(struct ladder));
+    p_ladder->index_head = NULL;
+    p_ladder->index_foot = NULL;
     p_ladder->next = NULL;
     return p_ladder;
 }
@@ -222,8 +266,8 @@ int main(int argc, char *argv[]){
     struct ladder *head_ladder = init_ladder();
 
     // create each snakes and ladders into the main arrays
-    for(int i=0; i<number_snakes; i++) snakes_game[i] = addSnake(head_snake); 
-    for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder); 
+    for(int i=0; i<number_snakes; i++) snakes_game[i] = addSnake(head_snake, game); 
+    for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder, game); 
 
     fclose(file);
     // free
