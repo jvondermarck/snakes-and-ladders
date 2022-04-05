@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 // Constant of the boardgame min and max size
-#define MIN_SIZE 1
-#define MAX_SIZE 10
+#define MIN_SIZE 10
+#define MAX_SIZE 1
 #define COLUMNS 8
 
 struct snake {
@@ -70,7 +70,6 @@ struct boardgame *create_boardgame(){
         p_boardgame->square[i].next = NULL; // Next square as null 
         if(i==0) p_boardgame->square[i].isPlayer = true; // We place the player at the 1st square
         else p_boardgame->square[i].isPlayer = false;
-        
     }
 
     // We make sure that each square have a next square (expect the last one)
@@ -124,29 +123,29 @@ int random_length(int range){
 struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
     // create a space in memory for a new p_snake
     struct snake *p_snake = malloc(sizeof(struct snake));
-    struct square *cursor_square = boardgame->head_square;
 
     // Taking care of looking a place to put on a square to put the head of snake
     int random_head, random_foot = 0;
     while(1) {
-       random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
-       while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
+        struct square *cursor_square = boardgame->head_square;
+        random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
+        while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
             cursor_square = cursor_square->next;
         }
-       if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
            cursor_square->isSnake = p_snake;
            cursor_square->isSnake->index_head = cursor_square;
            break;
-       }
+        }
     }
 
     // Look for a place to put the foot of a snake
-    cursor_square = boardgame->head_square; // we re-init our variable
     while(1) {
+       struct square *cursor_square = boardgame->head_square; // we re-init our variable
        if(random_head<=10) {
-           random_foot = 1 + rand() % random_head-1;
+           random_foot = 2 + rand() % (random_head-1); // from square 2 to random_head-1
        } else {
-           random_foot = random_head-10 + rand() % 10; // from square head-1 to -10
+           random_foot = (random_head-10) + rand() % 10; // from square head-1 to -10
        }
        
        while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
