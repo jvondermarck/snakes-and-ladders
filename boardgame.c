@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h> // for srand()
+#include <stdbool.h>
 
 // Constant of the boardgame min and max size
 #define MIN_SIZE 32
 #define MAX_SIZE 64
+#define COLUMNS 8
 
 struct snake {
     int index_head;
@@ -23,29 +25,86 @@ struct ladder {
 
 struct square {
     int index;
-    int isPlayer; // 0 = not here and 1 = on this square
-    int isFinal; // 0 = not the final square and 1 = if final square
-    
+    bool isPlayer; // false = not here and true = on this square
+    struct square *next; // if next = null -> we're on the last square
 };
 
 struct boardgame {
     int index_player; // where is located the player
     int length;
+    struct square *square; // because i don't know the size of array, I just use a pointer 
+    struct square *head_square;
 };
+
+struct square *init_square() {
+    struct square *p_square = malloc(sizeof(struct square));
+    p_square->index = 0;
+    p_square->isPlayer = false; 
+    p_square->next = NULL;
+    return p_square;
+}
 
 // create a boardgame randomly of size 32 to 64
 struct boardgame *create_boardgame(){
-    int column = 8;
+    srand(time(NULL));
 
     int mod = (MAX_SIZE-MIN_SIZE)+1; // to be between 32 and 64 
-    int row = rand() % mod + MIN_SIZE; // between 32 and 64 randomly
-    if(((row/2) % 2) != 0) { // if odd number
-        row += 1 
+    int length = rand() % mod + MIN_SIZE; // between 32 and 64 randomly
+
+    struct boardgame *p_boardgame = malloc(sizeof(struct boardgame));
+    p_boardgame->length = 36;
+
+    // Taking care of squares now :
+    // linked list : creation of the list head of square
+    struct square *head_square = init_square();
+    p_boardgame->head_square = malloc(sizeof(struct square));
+    p_boardgame->head_square = head_square;
+
+    p_boardgame->square = malloc(length * sizeof(struct square));
+    for(int i=0; i<p_boardgame->length; i++){
+        struct square *p_square = malloc(sizeof(struct square));
+        p_boardgame->square[i] = *p_square;
+
+        p_boardgame->square[i].index = i+1;
+        if(i==0) p_boardgame->square[i].isPlayer = true;
+        else p_boardgame->square[i].isPlayer = false;
+        p_boardgame->square[i].next = NULL;
     }
 
-    struct snake *p_boardgame = malloc(sizeof(struct boardgame));
-    p_boardgame->length = row+column;
+    // We make sure that each square have a next square (expect the last one)
+    for(int i=0; i<p_boardgame->length; i++){
+        // we move the cursor
+        struct square *cursor = p_boardgame->head_square;
+        while(cursor->next != NULL){
+            cursor = cursor->next;
+        }
+        cursor->next = &p_boardgame->square[i];
+    }
+    
+    return p_boardgame;
+}
 
+void print_boardgame(struct boardgame *p_boardgame){
+    bool odd = false;
+    int compt = 0;
+    for(int i=p_boardgame->length-1; i>=0; i--){
+        if(odd){
+            for(int j=i-COLUMNS+1; j<=i; j++){
+                printf(" %2d ",p_boardgame->square[j].index);
+            }
+            odd = false;
+            printf("\n");
+            i -= 7;
+        } else {
+            compt += 1;
+            printf(" %2d ", p_boardgame->square[i].index);
+            if(compt == 8) {
+                printf("\n");
+                odd = true;
+                compt = 0;
+            }
+        }
+    }
 }
 
 // simulate a die
@@ -147,6 +206,10 @@ int main(int argc, char *argv[]){
     // Write data to the report
     fprintf(file,"- There is %d snakes.\n- There is %d ladders.\n", number_snakes, number_ladders);
 
+    // we create the boardgame
+    struct boardgame *game = create_boardgame();
+    print_boardgame(game);
+
     // creation of the array of snake/ladder that will contains all snakes/ladders inputed by the user
     struct snake *snakes_game[number_snakes];
     memset(&snakes_game, 0, sizeof(struct snake)); // Init the two arrays to 0
@@ -162,8 +225,6 @@ int main(int argc, char *argv[]){
     for(int i=0; i<number_snakes; i++) snakes_game[i] = addSnake(head_snake); 
     for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder); 
 
-    // we create the boardgame
-    struct boardgame game = create_boardgame();
-
     fclose(file);
+    // free
 }
