@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 // Constant of the boardgame min and max size
-#define MIN_SIZE 10
-#define MAX_SIZE 1
+#define MIN_SIZE 32
+#define MAX_SIZE 64
 #define COLUMNS 8
 
 struct snake {
@@ -28,6 +28,7 @@ struct square {
     bool isPlayer; // false = not here and true = on this square
     struct snake *isSnake;
     struct ladder *isLadder;
+    char name[2];
     struct square *next; // if next = null -> we're on the last square
 };
 
@@ -67,6 +68,8 @@ struct boardgame *create_boardgame(){
         p_boardgame->square[i].index = i+1; // Number of the square
         p_boardgame->square[i].isSnake = NULL; // Init to NULL because it doesn't have a snake yet
         p_boardgame->square[i].isLadder = NULL;
+        p_boardgame->square[i].name[0] = 'X';
+        p_boardgame->square[i].name[1] = 'X';
         p_boardgame->square[i].next = NULL; // Next square as null 
         if(i==0) p_boardgame->square[i].isPlayer = true; // We place the player at the 1st square
         else p_boardgame->square[i].isPlayer = false;
@@ -87,25 +90,52 @@ struct boardgame *create_boardgame(){
 
 void print_boardgame(struct boardgame *p_boardgame){
     bool odd = false;
-    int compt = 0;
-    for(int i=p_boardgame->length-1; i>=0; i--){
+    int i = p_boardgame->length-1;
+    while(i >= 0) {
         if(odd){
+            printf("-----------------------------------------\n| ");
+
             for(int j=i-COLUMNS+1; j<=i; j++){
-                printf(" %2d ",p_boardgame->square[j].index);
+                if(j >= 0)
+                    printf("%02d | ",p_boardgame->square[j].index);
+                else {
+                    printf("00 | ");
+                }
             }
             odd = false;
-            printf("\n");
-            i -= 7;
-        } else {
-            compt += 1;
-            printf(" %2d ", p_boardgame->square[i].index);
-            if(compt == 8) {
-                printf("\n");
-                odd = true;
-                compt = 0;
+            printf("\n| ");
+            for(int j=i-COLUMNS+1; j<=i; j++){
+                if(j >= 0)
+                    printf("%s | ", p_boardgame->square[j].name);
+                else {
+                    printf("00 | ");
+                }
             }
+            printf("\n");
+        } else {
+            int temp = i;
+            printf("-----------------------------------------\n| ");
+            for(int j=i; j>temp-8; j--){
+                if(j >= 0)
+                    printf("%02d | ", p_boardgame->square[j].index);
+                else {
+                    printf("00 | ");
+                }
+            }
+            printf("\n| ");
+            for(int j=i; j>temp-8; j--){
+                if(j >= 0)
+                    printf("%s | ", p_boardgame->square[j].name);
+                else {
+                    printf("00 | ");
+                }
+            }
+            printf("\n");
+            odd = true;
         }
+        i -= 8;
     }
+    printf("-----------------------------------------\n");
 }
 
 // simulate a die
@@ -135,6 +165,8 @@ struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
         if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
            cursor_square->isSnake = p_snake;
            cursor_square->isSnake->index_head = cursor_square;
+           cursor_square->isSnake->index_head->name[0] = 'S';
+           cursor_square->isSnake->index_head->name[1] = 'H';
            break;
         }
     }
@@ -154,6 +186,8 @@ struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
            cursor_square->isSnake = p_snake; // we point to our snake
            cursor_square->isSnake->index_foot = cursor_square;
+           cursor_square->isSnake->index_foot->name[0] = 'S';
+           cursor_square->isSnake->index_foot->name[1] = 'F';
            break;
        }
     }
@@ -251,7 +285,6 @@ int main(int argc, char *argv[]){
 
     // we create the boardgame
     struct boardgame *game = create_boardgame();
-    print_boardgame(game);
 
     // creation of the array of snake/ladder that will contains all snakes/ladders inputed by the user
     struct snake *snakes_game[number_snakes];
@@ -267,6 +300,8 @@ int main(int argc, char *argv[]){
     // create each snakes and ladders into the main arrays
     for(int i=0; i<number_snakes; i++) snakes_game[i] = addSnake(head_snake, game); 
     for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder, game); 
+
+    print_boardgame(game);
 
     fclose(file);
     // free
