@@ -68,8 +68,7 @@ struct boardgame *create_boardgame(){
         p_boardgame->square[i].index = i+1; // Number of the square
         p_boardgame->square[i].isSnake = NULL; // Init to NULL because it doesn't have a snake yet
         p_boardgame->square[i].isLadder = NULL;
-        p_boardgame->square[i].name[0] = 'X';
-        p_boardgame->square[i].name[1] = 'X';
+        memset(p_boardgame->square[i].name, '\0', sizeof(char)); 
         p_boardgame->square[i].next = NULL; // Next square as null 
         if(i==0) p_boardgame->square[i].isPlayer = true; // We place the player at the 1st square
         else p_boardgame->square[i].isPlayer = false;
@@ -99,16 +98,31 @@ void print_boardgame(struct boardgame *p_boardgame){
                 if(j >= 0)
                     printf("%02d | ",p_boardgame->square[j].index);
                 else {
-                    printf("00 | ");
+                    printf("-- | ");
                 }
             }
             odd = false;
             printf("\n| ");
             for(int j=i-COLUMNS+1; j<=i; j++){
-                if(j >= 0)
-                    printf("%s | ", p_boardgame->square[j].name);
+                if(j >= 0) {
+                    if(p_boardgame->square[j].name[0] == '\0') {
+                        printf("   | ");
+                    } else {
+                        printf("%s | ", p_boardgame->square[j].name);
+                    }      
+                }
                 else {
-                    printf("00 | ");
+                    printf("-- | ");
+                }
+            }
+            printf("\n| ");
+            for(int j=i-COLUMNS+1; j<=i; j++){
+                if(j >= 0) {
+                    if(p_boardgame->square[j].isPlayer) { printf("XX | "); }
+                    else {printf("   | ");}
+                }
+                else {
+                    printf("   | ");
                 }
             }
             printf("\n");
@@ -119,15 +133,30 @@ void print_boardgame(struct boardgame *p_boardgame){
                 if(j >= 0)
                     printf("%02d | ", p_boardgame->square[j].index);
                 else {
-                    printf("00 | ");
+                    printf("-- | ");
                 }
             }
             printf("\n| ");
             for(int j=i; j>temp-8; j--){
-                if(j >= 0)
-                    printf("%s | ", p_boardgame->square[j].name);
+                if(j >= 0) {
+                    if(p_boardgame->square[j].name[0] == '\0') {
+                        printf("   | ");
+                    } else {
+                        printf("%s | ", p_boardgame->square[j].name);
+                    }      
+                }
                 else {
-                    printf("00 | ");
+                    printf("-- | ");
+                }
+            }
+            printf("\n| ");
+            for(int j=i; j>temp-8; j--){
+                if(j >= 0) {
+                    if(p_boardgame->square[j].isPlayer) { printf("XX | "); }
+                    else {printf("   | ");}
+                }
+                else {
+                    printf("   | ");
                 }
             }
             printf("\n");
