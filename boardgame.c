@@ -1,43 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h> // for srand()
-#include <stdbool.h>
-
-// Constant of the boardgame min and max size
-#define MIN_SIZE 32
-#define MAX_SIZE 64
-#define COLUMNS 8
-
-struct snake {
-    struct square *index_head;
-    struct square *index_foot;
-    int length;
-    struct snake *next;
-};
-
-struct ladder {
-    struct square *index_head;
-    struct square *index_foot;
-    int length;
-    struct ladder *next;
-};
-
-struct square {
-    int index;
-    bool isPlayer; // false = not here and true = on this square
-    struct snake *isSnake;
-    struct ladder *isLadder;
-    char name[2];
-    struct square *next; // if next = null -> we're on the last square
-};
-
-struct boardgame {
-    int index_player; // where is located the player
-    int length;
-    struct square *square; // because i don't know the size of array, I just use a pointer 
-    struct square *head_square;
-};
+#include "boardgame.h"
 
 struct square *init_square() {
     struct square *p_square = malloc(sizeof(struct square));
@@ -179,54 +140,101 @@ int random_length(int range){
     return result;
 }
 
+void getRandomHead(struct boardgame *boardgame, void *data, char letter[2], int *random_head, bool isSnake){
+    int temp = 1;
+    while(1) {
+        bool breakLoop = false;
+        struct square *cursor_square = boardgame->head_square;
+        *random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
+        while(cursor_square->index != *random_head){ // Seek the index of the random number in our array of square
+            if(cursor_square->next == NULL) {  breakLoop = true; break;}
+            cursor_square = cursor_square->next;
+        }
+        if(breakLoop) break;
+
+        temp += 1;
+        if(temp>=10) { // we need to change the position of the head if no place available
+            getRandomHead(boardgame, data, letter, random_head, isSnake);
+            temp = 0;
+        } 
+        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+            if(isSnake) { // if true = means that we take care of snakes 
+                cursor_square->isSnake = data;
+                cursor_square->isSnake->index_head = cursor_square;
+                cursor_square->isSnake->index_head->name[0] = letter[0];
+                cursor_square->isSnake->index_head->name[1] = letter[1];
+            } else { // if false = means that we take care of ladder 
+                cursor_square->isLadder = data;
+                cursor_square->isLadder->index_head = cursor_square;
+                cursor_square->isLadder->index_head->name[0] = letter[0];
+                cursor_square->isLadder->index_head->name[1] = letter[1];
+            }
+           
+           break;
+        }
+    }
+}
+
+int getRandomFoot(struct boardgame *boardgame, void *data, char letter[2], char letterHead[2], int *random_head, bool isSnake){
+    int temp = 0;
+    int tempTen = 0;
+    int random_foot;
+    while(1) {
+        bool breakLoop = false;
+        struct square *cursor_square = boardgame->head_square; // we re-init our variable
+        if(*random_head<=10) {
+            random_foot = 2 + rand() % (*random_head-1); // from square 2 to random_head-1
+            tempTen += 1;
+        } else {
+            random_foot = (*random_head-10) + rand() % 10; // from square head-1 to -10
+        }
+
+        temp+=1;
+
+        if(tempTen==*random_head || temp>=10) { // we need to change the position of the head if no place available
+            getRandomHead(boardgame, data, letterHead, random_head, isSnake);
+            tempTen = 0; temp = 0;
+        }  
+
+        while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
+             if(cursor_square->next == NULL) {  breakLoop = true; break;}
+             cursor_square = cursor_square->next;
+        }
+
+        if(breakLoop) { getRandomHead(boardgame, data, letterHead, random_head, isSnake); tempTen = 0; temp = 0;}
+
+        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+            if(isSnake) { // if true = means that we take care of snakes 
+                cursor_square->isSnake = data; // we point to our snake
+                cursor_square->isSnake->index_foot = cursor_square;
+                cursor_square->isSnake->index_foot->name[0] = letter[0];
+                cursor_square->isSnake->index_foot->name[1] = letter[1];
+            } else { // if false = means that we take care of ladder 
+                cursor_square->isLadder = data; // we point to our snake
+                cursor_square->isLadder->index_foot = cursor_square;
+                cursor_square->isLadder->index_foot->name[0] = letter[0];
+                cursor_square->isLadder->index_foot->name[1] = letter[1];
+            }
+           
+           break;
+        }
+    }
+    return random_foot;
+}
+
 struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
     // create a space in memory for a new p_snake
     struct snake *p_snake = malloc(sizeof(struct snake));
 
     // Taking care of looking a place to put on a square to put the head of snake
     int random_head, random_foot = 0;
-    while(1) {
-        bool breakLoop = false;
-        struct square *cursor_square = boardgame->head_square;
-        random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
-        while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
-            if(cursor_square->next == NULL) {  breakLoop = true; break;}
-            cursor_square = cursor_square->next;
-        }
-        if(breakLoop) break;
-        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
-           cursor_square->isSnake = p_snake;
-           cursor_square->isSnake->index_head = cursor_square;
-           cursor_square->isSnake->index_head->name[0] = 'S';
-           cursor_square->isSnake->index_head->name[1] = 'H';
-           break;
-        }
-    }
+    int *p_random_head = &random_head;
+    char letterHead[2] = "SH";
+    char letterFoot[2] = "SF";
+    getRandomHead(boardgame, p_snake, letterHead, p_random_head, true);
 
     // Look for a place to put the foot of a snake
-    while(1) {
-        bool breakLoop = false;
-        struct square *cursor_square = boardgame->head_square; // we re-init our variable
-        if(random_head<=10) {
-            random_foot = 2 + rand() % (random_head-1); // from square 2 to random_head-1
-        } else {
-            random_foot = (random_head-10) + rand() % 10; // from square head-1 to -10
-        }
-
-        while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
-             if(cursor_square->next == NULL) {  breakLoop = true; break;}
-             cursor_square = cursor_square->next;
-        }
-        if(breakLoop) break;
-
-        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
-           cursor_square->isSnake = p_snake; // we point to our snake
-           cursor_square->isSnake->index_foot = cursor_square;
-           cursor_square->isSnake->index_foot->name[0] = 'S';
-           cursor_square->isSnake->index_foot->name[1] = 'F';
-           break;
-        }
-    }
+    random_foot = getRandomFoot(boardgame, p_snake, letterFoot, letterHead, p_random_head, true);
 
     printf("Snake : Head = %d and Foot = %d\n", p_snake->index_head->index, p_snake->index_foot->index);
     
@@ -249,50 +257,13 @@ struct ladder *addLadder(struct ladder *head_ladder, struct boardgame *boardgame
 
     // Taking care of looking a place to put on a square to put the head of snake
     int random_head, random_foot = 0;
-    // Look for a place to put the foot of a snake
-    while(1) {
-        bool breakLoop = false;
-        struct square *cursor_square = boardgame->head_square;
-        random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
-       
-        while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
-            if(cursor_square->next == NULL) {  breakLoop = true; break;}
-            cursor_square = cursor_square->next;
-         }
-         if(breakLoop) break;
-        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
-            cursor_square->isLadder = p_ladder; // we point to our snake
-            cursor_square->isLadder->index_head = cursor_square;
-            cursor_square->isLadder->index_head->name[0] = 'L';
-            cursor_square->isLadder->index_head->name[1] = 'H';
-            break;
-        }
-    }
+    int *p_random_head = &random_head;
+    char letterHead[2] = "LH";
+    char letterFoot[2] = "LF";
 
-    while(1) {
-        bool breakLoop = false;
-        struct square *cursor_square = boardgame->head_square;
+    getRandomHead(boardgame, p_ladder, letterHead, p_random_head, false);
+    random_foot = getRandomFoot(boardgame, p_ladder, letterFoot, letterHead, p_random_head, false);
 
-        if(random_head<=10) {
-            random_foot = 2 + rand() % (random_head-1); // from square 2 to random_head-1
-        } else {
-            random_foot = (random_head-10) + rand() % 10; // from square head-1 to -10
-        }
-
-        while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
-            if(cursor_square->next == NULL) {  breakLoop = true; break;}
-            cursor_square = cursor_square->next;
-        }
-        if(breakLoop) break;
-
-        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
-           cursor_square->isLadder = p_ladder;
-           cursor_square->isLadder->index_foot = cursor_square;
-           cursor_square->isLadder->index_foot->name[0] = 'L';
-           cursor_square->isLadder->index_foot->name[1] = 'F';
-           break;
-        }
-    }
     p_ladder->length = random_head-random_foot;
 
     printf("Ladder : Head = %d and Foot = %d\n", p_ladder->index_head->index, p_ladder->index_foot->index);
@@ -328,12 +299,12 @@ struct ladder *init_ladder(){
 // Check if the args written in the command line are correct numbers, must be around 5 to 30 snakes/ladders.
 int check_args(char *argv[]) {
     int res = 0; // if 0 = all good OR if 1 = will return an error and stop the application
-    if(atoi(argv[1]) < 2 || atoi(argv[1]) > 20){
-        printf("Error <number_snakes> : enter a number between 2 and 20.\n");
+    if(atoi(argv[1]) < 2 || atoi(argv[1]) > 7){
+        printf("Error <number_snakes> : enter a number between 2 and 7.\n");
         res = 1;
     }
-    if(atoi(argv[2]) < 2 || atoi(argv[2]) > 20) {
-        printf("Error <number_ladders> : enter a number between 2 and 20.\n");
+    if(atoi(argv[2]) < 2 || atoi(argv[2]) > 7) {
+        printf("Error <number_ladders> : enter a number between 2 and 7.\n");
         res = 1;
     }
     return res;
@@ -343,7 +314,7 @@ int main(int argc, char *argv[]){
     srand(time(NULL)); // to avoid always have the same value with rand()
     if (argc < 2) { // check if user gave two parameters
         printf("Error : %s <number_snakes> <number_ladders>\n", argv[0]);
-        printf("--> Don't forget to enter two parameters between 2 to 20 for snakes/ladders amount.\n");  
+        printf("--> Don't forget to enter two parameters between 2 to 7 for snakes/ladders amount.\n");  
         return 1; 
     }
 
