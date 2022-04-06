@@ -68,7 +68,7 @@ struct boardgame *create_boardgame(){
         p_boardgame->square[i].index = i+1; // Number of the square
         p_boardgame->square[i].isSnake = NULL; // Init to NULL because it doesn't have a snake yet
         p_boardgame->square[i].isLadder = NULL;
-        memset(p_boardgame->square[i].name, '\0', sizeof(char)); 
+        memset(p_boardgame->square[i].name, '\0', sizeof(char)*2); 
         p_boardgame->square[i].next = NULL; // Next square as null 
         if(i==0) p_boardgame->square[i].isPlayer = true; // We place the player at the 1st square
         else p_boardgame->square[i].isPlayer = false;
@@ -186,11 +186,14 @@ struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
     // Taking care of looking a place to put on a square to put the head of snake
     int random_head, random_foot = 0;
     while(1) {
+        bool breakLoop = false;
         struct square *cursor_square = boardgame->head_square;
         random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
         while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
+            if(cursor_square->next == NULL) {  breakLoop = true; break;}
             cursor_square = cursor_square->next;
         }
+        if(breakLoop) break;
         if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
            cursor_square->isSnake = p_snake;
            cursor_square->isSnake->index_head = cursor_square;
@@ -202,23 +205,27 @@ struct snake *addSnake(struct snake *head_snake, struct boardgame *boardgame) {
 
     // Look for a place to put the foot of a snake
     while(1) {
-       struct square *cursor_square = boardgame->head_square; // we re-init our variable
-       if(random_head<=10) {
-           random_foot = 2 + rand() % (random_head-1); // from square 2 to random_head-1
-       } else {
-           random_foot = (random_head-10) + rand() % 10; // from square head-1 to -10
-       }
-       
-       while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
-            cursor_square = cursor_square->next;
+        bool breakLoop = false;
+        struct square *cursor_square = boardgame->head_square; // we re-init our variable
+        if(random_head<=10) {
+            random_foot = 2 + rand() % (random_head-1); // from square 2 to random_head-1
+        } else {
+            random_foot = (random_head-10) + rand() % 10; // from square head-1 to -10
         }
-       if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+
+        while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
+             if(cursor_square->next == NULL) {  breakLoop = true; break;}
+             cursor_square = cursor_square->next;
+        }
+        if(breakLoop) break;
+
+        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
            cursor_square->isSnake = p_snake; // we point to our snake
            cursor_square->isSnake->index_foot = cursor_square;
            cursor_square->isSnake->index_foot->name[0] = 'S';
            cursor_square->isSnake->index_foot->name[1] = 'F';
            break;
-       }
+        }
     }
 
     printf("Snake : Head = %d and Foot = %d\n", p_snake->index_head->index, p_snake->index_foot->index);
@@ -240,13 +247,58 @@ struct ladder *addLadder(struct ladder *head_ladder, struct boardgame *boardgame
     // create a space in memory for a new p_ladder
     struct ladder *p_ladder = malloc(sizeof(struct ladder));
 
-    // esnure the data field of the node points to the data
-    p_ladder->next = NULL;
-    p_ladder->index_head = 0;
-    p_ladder->index_foot = 0;
-    p_ladder->length = rand() % 10 + 1;
+    // Taking care of looking a place to put on a square to put the head of snake
+    int random_head, random_foot = 0;
+    // Look for a place to put the foot of a snake
+    while(1) {
+        bool breakLoop = false;
+        struct square *cursor_square = boardgame->head_square;
+        random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
+       
+        while(cursor_square->index != random_head){ // Seek the index of the random number in our array of square
+            if(cursor_square->next == NULL) {  breakLoop = true; break;}
+            cursor_square = cursor_square->next;
+         }
+         if(breakLoop) break;
+        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+            cursor_square->isLadder = p_ladder; // we point to our snake
+            cursor_square->isLadder->index_head = cursor_square;
+            cursor_square->isLadder->index_head->name[0] = 'L';
+            cursor_square->isLadder->index_head->name[1] = 'H';
+            break;
+        }
+    }
+
+    while(1) {
+        bool breakLoop = false;
+        struct square *cursor_square = boardgame->head_square;
+
+        if(random_head<=10) {
+            random_foot = 2 + rand() % (random_head-1); // from square 2 to random_head-1
+        } else {
+            random_foot = (random_head-10) + rand() % 10; // from square head-1 to -10
+        }
+
+        while(cursor_square->index != random_foot){ // Seek the index of the random number in our array of square
+            if(cursor_square->next == NULL) {  breakLoop = true; break;}
+            cursor_square = cursor_square->next;
+        }
+        if(breakLoop) break;
+
+        if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
+           cursor_square->isLadder = p_ladder;
+           cursor_square->isLadder->index_foot = cursor_square;
+           cursor_square->isLadder->index_foot->name[0] = 'L';
+           cursor_square->isLadder->index_foot->name[1] = 'F';
+           break;
+        }
+    }
+    p_ladder->length = random_head-random_foot;
+
+    printf("Ladder : Head = %d and Foot = %d\n", p_ladder->index_head->index, p_ladder->index_foot->index);
 
     // we move the cursor
+    p_ladder->next = NULL;
     struct ladder *cursor = head_ladder;
     while(cursor->next != NULL){
         cursor = cursor->next;
