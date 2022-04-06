@@ -29,7 +29,8 @@ struct boardgame *create_boardgame(){
         p_boardgame->square[i].index = i+1; // Number of the square
         p_boardgame->square[i].isSnake = NULL; // Init to NULL because it doesn't have a snake yet
         p_boardgame->square[i].isLadder = NULL;
-        memset(p_boardgame->square[i].name, '\0', sizeof(char)*2); 
+        p_boardgame->square[i].name[0] = '\0';
+        p_boardgame->square[i].name[1] = '\0';
         p_boardgame->square[i].next = NULL; // Next square as null 
         if(i==0) p_boardgame->square[i].isPlayer = true; // We place the player at the 1st square
         else p_boardgame->square[i].isPlayer = false;
@@ -69,7 +70,7 @@ void print_boardgame(struct boardgame *p_boardgame){
                     if(p_boardgame->square[j].name[0] == '\0') {
                         printf("   | ");
                     } else {
-                        printf("%s | ", p_boardgame->square[j].name);
+                        printf("%c%c | ", p_boardgame->square[j].name[0], p_boardgame->square[j].name[1]);
                     }      
                 }
                 else {
@@ -103,7 +104,7 @@ void print_boardgame(struct boardgame *p_boardgame){
                     if(p_boardgame->square[j].name[0] == '\0') {
                         printf("   | ");
                     } else {
-                        printf("%s | ", p_boardgame->square[j].name);
+                        printf("%c%c | ", p_boardgame->square[j].name[0], p_boardgame->square[j].name[1]);
                     }      
                 }
                 else {

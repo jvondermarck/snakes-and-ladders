@@ -6,7 +6,7 @@
 
 // Constant of the boardgame min and max size
 #define MIN_SIZE 32
-#define MAX_SIZE 32
+#define MAX_SIZE 64
 #define COLUMNS 8
 
 struct snake {
