@@ -1,21 +1,21 @@
 # L'exécutable à générer :
-EXEC=main
+EXEC=boardgame
 
 # Les fichiers .o a générer si nécessaire
 DEP=boardgame.o
 
-all: main
+all: $(EXEC)
 
 #Variables personnalisées
 CC=gcc
 CFLAGS=-Wall 
 LDFLAGS=
 
-%.o: %.c 
-	$(CC) -c $^ $(CFLAGS)
+%.o: %.c boardgame.h
+	$(CC) -o $@ -c $< $(CFLAGS)
 
-main: $(DEP)
-	$(CC) $(CFLAGS) -o $(EXEC) boardgame.c $(DEP)
+$(EXEC): $(EXEC).c $(DEP)
+	$(CC) $(CFLAGS) -o $@ $(DEP) $<
 
 #### RAPPEL ################
 #

@@ -176,6 +176,21 @@ void getRandomHead(struct boardgame *boardgame, void *data, char letter[2], int 
     }
 }
 
+// when we change the head index, we need to update the index of the head to NULL in his square
+void resetHeadIndex(struct boardgame *boardgame, int *random_head, bool isSnake){
+    struct square *cursor_square = boardgame->head_square;
+    while(cursor_square->index != *random_head){ // Seek the index of the random number in our array of square
+        cursor_square = cursor_square->next;
+    }
+    if(isSnake) { // if true = means that we take care of snakes 
+        cursor_square->isSnake = NULL; // we point to our snake
+        cursor_square->isSnake->index_head = NULL;
+    } else { // if false = means that we take care of ladder 
+        cursor_square->isLadder = NULL; // we point to our snake
+        cursor_square->isLadder->index_head = NULL;
+    }
+}
+
 int getRandomFoot(struct boardgame *boardgame, void *data, char letter[2], char letterHead[2], int *random_head, bool isSnake){
     int temp = 0;
     int tempTen = 0;
@@ -193,6 +208,7 @@ int getRandomFoot(struct boardgame *boardgame, void *data, char letter[2], char 
         temp+=1;
 
         if(tempTen==*random_head || temp>=10) { // we need to change the position of the head if no place available
+            resetHeadIndex(boardgame, random_head, isSnake);
             getRandomHead(boardgame, data, letterHead, random_head, isSnake);
             tempTen = 0; temp = 0;
         }  
@@ -202,7 +218,7 @@ int getRandomFoot(struct boardgame *boardgame, void *data, char letter[2], char 
              cursor_square = cursor_square->next;
         }
 
-        if(breakLoop) { getRandomHead(boardgame, data, letterHead, random_head, isSnake); tempTen = 0; temp = 0;}
+        if(breakLoop) { resetHeadIndex(boardgame, random_head, isSnake); getRandomHead(boardgame, data, letterHead, random_head, isSnake); tempTen = 0; temp = 0;}
 
         if(cursor_square->isSnake == NULL && cursor_square->isLadder == NULL){
             if(isSnake) { // if true = means that we take care of snakes 
