@@ -463,5 +463,13 @@ int main(int argc, char *argv[]){
     launch_game(game);
 
     fclose(file);
-    // free
+    for(int i=0; i<number_snakes; i++){
+        free(snakes_game[i]);
+    }
+    for(int i=0; i<number_ladders; i++){
+        free(ladders_game[i]);
+    }
+    free(head_snake);
+    free(head_ladder);
+    free(game);
 }

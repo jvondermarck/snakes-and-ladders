@@ -10,7 +10,7 @@
   - [🛠 Installation on Windows](#-installation-on-windows)
   - [🛠 Installation on Linux](#-installation-on-linux)
 - [🎮 How to Play](#-how-to-play)
-- [The gameboard](#the-gameboard)
+- [🕹️ The gameboard](#️-the-gameboard)
 - [✍️ Licence](#️-licence)
 - [👨 Creator](#-creator)
 
@@ -33,18 +33,18 @@
 - Press enter to roll a die
 - And watch your player moving forwards or backwards on the gameboard :)
 
-# The gameboard
+# 🕹️ The gameboard
 
 <h3 align="center">Screenshot of the gameboard</h3>
 <h3 align="center"><img src="assets/gameboard_1.png" width="224px"/><br/></h3><br>
 
-- **1st : Index of the square**
+- 🔢 **1st : Index of the square**
 - **2nd line : If square contains a snake / ladder**
-  - **SH** : Snake head
-  - **SF** : Snake foot
-  - **LH** : Ladder head
-  - **LF** : Ladder foot
-- **3r line : Location of the player**
+  - 🐍 **SH** : Snake head
+  - 🐍 **SF** : Snake foot
+  - 🪜 **LH** : Ladder head
+  - 🪜 **LF** : Ladder foot
+- 📍 **3r line : Location of the player**
 
 # ✍️ Licence
 
