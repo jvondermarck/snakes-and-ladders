@@ -313,6 +313,65 @@ struct ladder *init_ladder(){
     return p_ladder;
 }
 
+struct square *getSquare(struct boardgame *boardgame, int index){
+    // we seek the square thanks to the index
+    struct square *cursor_square = boardgame->head_square; 
+    while(cursor_square->index != index){ // Seek the index of the random number in our array of square
+        if(cursor_square->next == NULL) { break;}
+        cursor_square = cursor_square->next;
+    }
+    return cursor_square;
+}
+
+void launch_game(struct boardgame *boardgame) {
+    // we seek the square where is located the player now
+    struct square *actual_square = boardgame->head_square;
+    while(!actual_square->isPlayer){ // While we're not in the square where the player is located we move on
+        actual_square = actual_square->next;
+    }
+
+    // while the player is not in the last square, we continue the game
+    while(actual_square->next != NULL) {
+        // wait user to roll a die: 
+        printf("--> Press enter to roll the die... ");
+        char enter = 0;
+        while (enter != '\r' && enter != '\n') { enter = getchar(); }
+        system("@cls||clear"); // clear terminal
+
+        // roll the die
+        int index_player = roll_die();
+        printf("Result of the die : %d\n", index_player);
+
+        // we seek the new square where the player will be
+        struct square *new_square = getSquare(boardgame, index_player);
+
+        if(new_square->isSnake) {
+            if(new_square->isSnake->index_head != NULL) {
+                // we get the length to move backwards
+                int decrease_length = new_square->isSnake->length; 
+                printf("Head snake : move to square n°%d\n", index_player-decrease_length);
+                new_square = getSquare(boardgame, index_player-decrease_length);
+            }
+        } 
+
+        if(new_square->isLadder) {
+            if(new_square->isSnake->index_foot != NULL) {
+                // we get the length to move forwards
+                int increase_length = new_square->isSnake->length; 
+                printf("Foot ladder : move to square n°%d\n", index_player+increase_length);
+                new_square = getSquare(boardgame, index_player+increase_length);
+            }
+        }
+
+        // change text when we move the player
+
+        print_boardgame(boardgame);
+    }
+
+    printf("Succesfull end ! Thank you !");
+    
+}
+
 // Check if the args written in the command line are correct numbers, must be around 5 to 30 snakes/ladders.
 int check_args(char *argv[]) {
     int res = 0; // if 0 = all good OR if 1 = will return an error and stop the application
@@ -329,6 +388,7 @@ int check_args(char *argv[]) {
 
 int main(int argc, char *argv[]){
     srand(time(NULL)); // to avoid always have the same value with rand()
+    system("@cls||clear"); // clear terminal
     if (argc < 2) { // check if user gave two parameters
         printf("Error : %s <number_snakes> <number_ladders>\n", argv[0]);
         printf("--> Don't forget to enter two parameters between 2 to 7 for snakes/ladders amount.\n");  
@@ -371,6 +431,7 @@ int main(int argc, char *argv[]){
     for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder, game); 
 
     print_boardgame(game);
+    launch_game(game);
 
     fclose(file);
     // free
