@@ -432,10 +432,14 @@ int main(int argc, char *argv[]){
     int number_ladders = atoi(argv[2]); 
 
     // Write data to the report
+    printf("WELCOME TO THE SNAKES AND LADDERS GAME !\n\n --> Some details below :\n");
     fprintf(file, "WELCOME TO THE SNAKES AND LADDERS GAME !\n\n --> Some details below :\n");
+    printf("\t - You choose %d snakes and %d ladders.\n", number_snakes, number_ladders);
     fprintf(file,"\t - You choose %d snakes and %d ladders.\n", number_snakes, number_ladders);
+    printf("\t - Meaning of the gameboard :\n\t   - SH: Sneak Head and SF = Snake Foot\n\t   - LH: Ladder Head and LF: Ladder Foot\n\t   - XX: Location of the player\n\n");
     fprintf(file, "\t - Meaning of the gameboard :\n\t   - SH: Sneak Head and SF = Snake Foot\n\t   - LH: Ladder Head and LF: Ladder Foot\n\t   - XX: Location of the player\n\n");
     time_t now = time(NULL);
+    printf("\t - Game played at : %s \n", ctime(&now));
     fprintf(file, "\t - Game played at : %s \n", ctime(&now));
 
     // we create the boardgame
