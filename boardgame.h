@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 // Constant of the boardgame min and max size
-#define MIN_SIZE 32
-#define MAX_SIZE 64
+#define MIN_SIZE 16
+#define MAX_SIZE 16
 #define COLUMNS 8
 
 struct snake {
