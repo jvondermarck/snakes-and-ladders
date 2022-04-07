@@ -1,5 +1,7 @@
 #include "boardgame.h"
 
+FILE *file;
+
 struct square *init_square() {
     struct square *p_square = malloc(sizeof(struct square));
     p_square->index = 0;
@@ -54,79 +56,92 @@ void print_boardgame(struct boardgame *p_boardgame){
     int i = p_boardgame->length-1;
     while(i >= 0) {
         if(odd){
-            printf("-----------------------------------------\n| ");
-
+            printf("-----------------------------------------\n| "); fprintf(file,"-----------------------------------------\n| ");
             for(int j=i-COLUMNS+1; j<=i; j++){
-                if(j >= 0)
+                if(j >= 0) {
                     printf("%02d | ",p_boardgame->square[j].index);
-                else {
-                    printf("-- | ");
+                    fprintf(file,"%02d | ", p_boardgame->square[j].index);
+                } else {
+                    printf("-- | "); fprintf(file,"-- | ");
                 }
             }
             odd = false;
-            printf("\n| ");
+            printf("\n| "); fprintf(file,"\n| ");
+
+            // we display if the square is a snake/ladder head/foot
             for(int j=i-COLUMNS+1; j<=i; j++){
                 if(j >= 0) {
                     if(p_boardgame->square[j].name[0] == '\0') {
-                        printf("   | ");
+                        printf("   | "); fprintf(file,"   | ");
                     } else {
                         printf("%c%c | ", p_boardgame->square[j].name[0], p_boardgame->square[j].name[1]);
+                        fprintf(file,"%c%c | ", p_boardgame->square[j].name[0], p_boardgame->square[j].name[1]);
                     }      
                 }
                 else {
                     printf("-- | ");
+                    fprintf(file,"-- | ");
                 }
             }
-            printf("\n| ");
+            printf("\n| "); fprintf(file,"\n| ");
+
+            // We display the player location : 
             for(int j=i-COLUMNS+1; j<=i; j++){
                 if(j >= 0) {
-                    if(p_boardgame->square[j].isPlayer) { printf("XX | "); }
-                    else {printf("   | ");}
+                    if(p_boardgame->square[j].isPlayer) { printf("\033[0;34mXX\033[0m | "); fprintf(file,"XX | ");}
+                    else {printf("   | "); fprintf(file,"   | ");}
                 }
                 else {
                     printf("   | ");
+                    fprintf(file,"   | ");
                 }
             }
-            printf("\n");
+            printf("\n"); fprintf(file,"\n");
         } else {
             int temp = i;
-            printf("-----------------------------------------\n| ");
+            printf("-----------------------------------------\n| "); fprintf(file,"-----------------------------------------\n| ");
             for(int j=i; j>temp-8; j--){
-                if(j >= 0)
+                if(j >= 0) {
                     printf("%02d | ", p_boardgame->square[j].index);
-                else {
-                    printf("-- | ");
+                    fprintf(file,"%02d | ", p_boardgame->square[j].index);
+                } else {
+                    printf("-- | "); fprintf(file,"-- | ");
                 }
             }
-            printf("\n| ");
+            printf("\n| "); fprintf(file,"\n| ");
+
+            // we display if the square is a snake/ladder head/foot
             for(int j=i; j>temp-8; j--){
                 if(j >= 0) {
                     if(p_boardgame->square[j].name[0] == '\0') {
-                        printf("   | ");
+                        printf("   | "); fprintf(file,"   | ");
                     } else {
                         printf("%c%c | ", p_boardgame->square[j].name[0], p_boardgame->square[j].name[1]);
+                        fprintf(file,"%c%c | ", p_boardgame->square[j].name[0], p_boardgame->square[j].name[1]);
                     }      
                 }
                 else {
-                    printf("-- | ");
+                    printf("-- | "); fprintf(file,"-- | ");
                 }
             }
-            printf("\n| ");
+            printf("\n| "); fprintf(file,"\n| ");
+
+            // We display the player location : 
             for(int j=i; j>temp-8; j--){
                 if(j >= 0) {
-                    if(p_boardgame->square[j].isPlayer) { printf("XX | "); }
-                    else {printf("   | ");}
+                    if(p_boardgame->square[j].isPlayer) { printf("\033[0;34mXX\033[0m | ");  fprintf(file,"XX | ");}
+                    else {printf("   | "); fprintf(file,"   | ");}
                 }
                 else {
-                    printf("   | ");
+                    printf("   | "); fprintf(file,"   | ");
                 }
             }
-            printf("\n");
+            printf("\n"); fprintf(file,"\n");
             odd = true;
         }
         i -= 8;
     }
-    printf("-----------------------------------------\n");
+    printf("-----------------------------------------\n"); fprintf(file,"-----------------------------------------\n\n");
 }
 
 // simulate a die
@@ -320,6 +335,8 @@ struct square *getSquare(struct boardgame *boardgame, int index){
 }
 
 void launch_game(struct boardgame *boardgame) {
+    print_boardgame(boardgame);
+    int round = 1;
     // we seek the square where is located the player now
     struct square *actual_square = boardgame->head_square;
     while(!actual_square->isPlayer){ // While we're not in the square where the player is located we move on
@@ -337,6 +354,7 @@ void launch_game(struct boardgame *boardgame) {
         char enter = 0;
         while (enter != '\r' && enter != '\n') { enter = getchar(); }
         system("@cls||clear"); // clear terminal
+        printf("-----------------ROUND %02d----------------\n\n", round); fprintf(file,"-----------------ROUND %02d----------------\n\n", round);
 
         // roll the die (check if we're 6 squares close to the end)
         int range = boardgame->length-actual_square->index;
@@ -369,6 +387,7 @@ void launch_game(struct boardgame *boardgame) {
         // change text when we move the player
         new_square->isPlayer = true;
         print_boardgame(boardgame);
+        round++;
     }
 
     printf("Succesfull end ! Thank you !");
@@ -394,14 +413,13 @@ int main(int argc, char *argv[]){
     system("@cls||clear"); // clear terminal
     if (argc < 2) { // check if user gave two parameters
         printf("Error : %s <number_snakes> <number_ladders>\n", argv[0]);
-        printf("--> Don't forget to enter two parameters between 2 to 7 for snakes/ladders amount.\n");  
+        printf("--> Don't forget to enter two parameters between 2 to 6 for snakes/ladders amount.\n");  
         return 1; 
     }
 
-    // int result = check_args(argv); // check if numbers are alright to play the game
-    // if(result == 1) return 1; // if number of snakes/ladders not between 2 to 20 ==> exit
+    int result = check_args(argv); // check if numbers are alright to play the game
+    if(result == 1) return 1; // if number of snakes/ladders not between 2 to 20 ==> exit
 
-    FILE *file;
     file = fopen("report_game.txt","w");
 
     if(file == NULL)
@@ -412,8 +430,13 @@ int main(int argc, char *argv[]){
 
     int number_snakes = atoi(argv[1]); // given by the user
     int number_ladders = atoi(argv[2]); 
+
     // Write data to the report
-    fprintf(file,"- There is %d snakes.\n- There is %d ladders.\n", number_snakes, number_ladders);
+    fprintf(file, "WELCOME TO THE SNAKES AND LADDERS GAME !\n\n --> Some details below :\n");
+    fprintf(file,"\t - You choose %d snakes and %d ladders.\n", number_snakes, number_ladders);
+    fprintf(file, "\t - Meaning of the gameboard :\n\t   - SH: Sneak Head and SF = Snake Foot\n\t   - LH: Ladder Head and LF: Ladder Foot\n\t   - XX: Location of the player\n\n");
+    time_t now = time(NULL);
+    fprintf(file, "\t - Game played at : %s \n", ctime(&now));
 
     // we create the boardgame
     struct boardgame *game = create_boardgame();
@@ -433,7 +456,6 @@ int main(int argc, char *argv[]){
     for(int i=0; i<number_snakes; i++) snakes_game[i] = addSnake(head_snake, game); 
     for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder, game); 
 
-    print_boardgame(game);
     launch_game(game);
 
     fclose(file);

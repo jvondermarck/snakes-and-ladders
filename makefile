@@ -2,7 +2,7 @@
 EXEC=boardgame
 
 # Les fichiers .o a générer si nécessaire
-DEP=boardgame.o
+DEP=
 
 all: $(EXEC)
 
@@ -14,7 +14,7 @@ LDFLAGS=
 %.o: %.c boardgame.h
 	$(CC) -o $@ -c $< $(CFLAGS)
 
-$(EXEC): $(EXEC).c $(DEP)
+$(EXEC): $(EXEC).c $(DEP) boardgame.h
 	$(CC) $(CFLAGS) -o $@ $(DEP) $<
 
 #### RAPPEL ################
