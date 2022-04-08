@@ -362,8 +362,13 @@ void launch_game(struct boardgame *boardgame) {
         if(range < 6) {  index_player = random_length(range); } 
         else { index_player = roll_die(range); }
         
-        printf("Result of the die : %d\n", index_player);
+        printf("--> Result of the die rolled : %d\n", index_player);
+        fprintf(file,"--> Result of the die rolled : %d\n", index_player);
+
         index_player += actual_square->index;
+
+        printf("--> You're moving to the square %d ...\n", index_player);
+        fprintf(file,"--> You're moving to the square %d ...\n", index_player);
 
         // we seek the new square where the player will be
         new_square = getSquare(boardgame, index_player);
@@ -372,14 +377,16 @@ void launch_game(struct boardgame *boardgame) {
             if(new_square->isSnake->index_head != NULL && new_square->isSnake->index_head->index == index_player) {
                 // we get the length to move backwards
                 int decrease_length = new_square->isSnake->length; 
-                printf("Head snake : move to square %d to %d.\n", index_player, index_player-decrease_length);
+                printf("--> Oh no... You landed on the head of a snake. You're going to move backwards to the square %d.\n", index_player-decrease_length);
+                fprintf(file,"--> Oh no... You ended on the head of a snake. You're going to move backwards to the square %d.\n", index_player-decrease_length);
                 new_square = getSquare(boardgame, index_player-decrease_length);
             }
         } else if (new_square->isLadder != NULL && new_square->isLadder->index_foot->index == index_player) {
             if(new_square->isLadder->index_foot != NULL) {
                 // we get the length to move forwards
                 int increase_length = new_square->isLadder->length; 
-                printf("Foot ladder : move to square %d to %d.\n", index_player, index_player+increase_length);
+                printf("--> Oh yes ! You landed on the foot of a ladder. You're going to move forwards to the square %d.\n", index_player+increase_length);
+                fprintf(file,"--> Oh yes ! You landed on the foot of a ladder. You're going to move forwards to the square %d.\n", index_player+increase_length);
                 new_square = getSquare(boardgame, index_player+increase_length);
             }
         }
@@ -390,8 +397,8 @@ void launch_game(struct boardgame *boardgame) {
         round++;
     }
 
-    printf("Succesfull end ! Thank you !");
-    
+    printf("Congrats, you finished the game in %d rounds ! ", round);
+    fprintf(file,"Congrats, you finished the game in %d rounds ! ", round);
 }
 
 // Check if the args written in the command line are correct numbers, must be around 5 to 30 snakes/ladders.
