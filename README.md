@@ -38,7 +38,7 @@
 <h3 align="center">Screenshot of the gameboard</h3>
 <h3 align="center"><img src="assets/gameboard_1.png" width="224px"/><br/></h3><br>
 
-- 🔢 **1st : Index of the square**
+- 🔢 **1st line : Index of the square**
 - **2nd line : If square contains a snake / ladder**
   - 🐍 **SH** : Snake head
   - 🐍 **SF** : Snake foot
