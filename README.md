@@ -38,6 +38,11 @@
 <h3 align="center">Screenshot of the gameboard</h3>
 <h3 align="center"><img src="assets/gameboard_1.png" width="224px"/><br/></h3><br>
 
+<h3 align="center">Gameplay of the gameboard</h3>
+
+https://user-images.githubusercontent.com/62793491/164045027-4545f0c0-916d-467b-b197-0fcdaaf8b706.mp4
+
+
 - 🔢 **1st line : Index of the square**
 - **2nd line : If square contains a snake / ladder**
   - 🐍 **SH** : Snake head
