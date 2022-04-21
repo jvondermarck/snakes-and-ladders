@@ -1,6 +1,27 @@
+/**
+ * @file boardgame.c
+ * @author Julien Von Der Marck
+ * @brief The boardgame Snakes and Ladders 
+ * 
+ *  This creates the boardgame
+ *  It also ask the user to enter the amount of snakes/ladders
+ *  It prints in the terminal each round the boardgame when the user roll the die
+ *  It also create a report file
+ * 
+ * @version 1.0.25
+ * @date 21/04/2022
+ * @bug No known bugs.
+ * 
+ * @copyright Copyright (c) 2022
+ */
+
 #include "boardgame.h"
 
-FILE *file;
+/**
+ * @brief File object  
+ * This variable will be used in many methods of this file to output different things into a file
+ */
+static FILE *file;
 
 struct square *init_square() {
     struct square *p_square = malloc(sizeof(struct square));
@@ -427,6 +448,7 @@ int check_args(char *argv[]) {
 int main(int argc, char *argv[]){
     srand(time(NULL)); // to avoid always have the same value with rand()
     system("@cls||clear"); // clear terminal
+    
     // read the number of snakes and ladders from the command line parameter
     if (argc < 2) { // check if user gave two parameters (check errors)
         printf("Error : %s <number_snakes> <number_ladders>\n", argv[0]);
@@ -434,17 +456,21 @@ int main(int argc, char *argv[]){
         return 1; 
     }
 
+    // we check the args and return an error if he made a mistake
     int result = check_args(argv); // check if numbers are alright to play the game
     if(result == 1) return 1; // if number of snakes/ladders not between 2 to 20 ==> exit
 
+    // we open the file in writing mode
     file = fopen("report_game.txt","w");
 
+    // we check if there is no error while creating/finding the file
     if(file == NULL)
     {
         printf("Error while creating the file !");   
         exit(1);             
     }
 
+    // we convert what the user wrote in the terminal into an integer
     int number_snakes = atoi(argv[1]); // given by the user
     int number_ladders = atoi(argv[2]); 
 
@@ -477,8 +503,10 @@ int main(int argc, char *argv[]){
     for(int i=0; i<number_snakes; i++) snakes_game[i] = addSnake(head_snake, game); 
     for(int i=0; i<number_ladders; i++) ladders_game[i] = addLadder(head_ladder, game); 
 
+    // we launch the whole game
     launch_game(game);
 
+    // we close the file and we free all the allocated variables
     fclose(file);
     for(int i=0; i<number_snakes; i++){
         free(snakes_game[i]);
