@@ -10,7 +10,8 @@
  * 
  * @version 1.0.25
  * @date 21/04/2022
- * @bug No known bugs.
+ * @bug No known bugs
+ * @command: make && ./boardgame <number_snakes> <number_ladders>
  * 
  * @copyright Copyright (c) 2022
  */
