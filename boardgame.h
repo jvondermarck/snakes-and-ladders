@@ -19,7 +19,7 @@
 /**
  * @brief Minimum size of the boardgame
  */
-#define MIN_SIZE 36
+#define MIN_SIZE 32
 
 /**
  * @brief Maximum size of the boardgame
