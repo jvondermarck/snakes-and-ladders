@@ -78,6 +78,7 @@ void print_boardgame(struct boardgame *p_boardgame){
     int i = p_boardgame->length-1;
     while(i >= 0) {
         if(odd){
+            // we display the index of the squares (1 to N_size)
             printf("|---------------------------------------|\n| "); fprintf(file,"-----------------------------------------\n| ");
             for(int j=i-COLUMNS+1; j<=i; j++){
                 if(j >= 0) {
@@ -123,6 +124,7 @@ void print_boardgame(struct boardgame *p_boardgame){
             }
             printf("\n"); fprintf(file,"\n");
         } else {
+            // we display the index of the squares (1 to N_size)
             int temp = i;
             printf("|---------------------------------------|\n| "); fprintf(file,"-----------------------------------------\n| ");
             for(int j=i; j>temp-8; j--){
@@ -195,7 +197,7 @@ void getRandomHead(struct boardgame *boardgame, void *data, char letter[2], int 
         } 
 
         struct square *cursor_square = boardgame->head_square;
-        *random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1
+        *random_head = rand() % (boardgame->length-2) + 2; // from square 2 to n-1 (square 1 and last square can't contains something)
         while(cursor_square->index != *random_head){ // Seek the index of the random number in our array of square
             cursor_square = cursor_square->next;
         }
@@ -429,6 +431,7 @@ void launch_game(struct boardgame *boardgame) {
     }
 
     printf("Congrats, you finished the game in %d rounds ! \n", round);
+    printf("A report under the name of 'report_game.txt' has been generated. Have a look at it :)\n");
     fprintf(file,"Congrats, you finished the game in %d rounds ! \n", round);
 }
 

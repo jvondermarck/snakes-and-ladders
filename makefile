@@ -1,7 +1,7 @@
-# L'exécutable à générer :
+# The executable to generate :
 EXEC=boardgame
 
-# Les fichiers .o a générer si nécessaire
+# .o files to generate if necessary
 DEP=
 
 all: $(EXEC)
@@ -17,20 +17,20 @@ LDFLAGS=
 $(EXEC): $(EXEC).c $(DEP) boardgame.h
 	$(CC) $(CFLAGS) -o $@ $(DEP) $<
 
-#### RAPPEL ################
+###################### REMINDER ###############################
 #
-#   $@    Nom de la cible
-#   $<     Nom de la première dépendance pour la cible
-#   $ˆ      Liste des dépendances pour la cible
-#   $?     Liste des dépendances plus récentes que la cible Nom du fichier (sans son suffixe)
-#   $*      Nom du fichier (sans son suffixe)
-#    % : permet de prendre un élément après l'autre dans une liste de cibles
-##################
+#   $@    Name of the target
+#   $<    Name of the first dependance for the target
+# 	$ˆ 	  List of dependencies for the target
+# 	$?    List of dependencies newer than the target File name (without its suffix)
+# 	$*    File name (without its suffix)
+# 	% 	  Allows to take one element after another in a list of targets
+###############################################################
 
-#supprimer les fichier *.o 
+#delete the *.o files 
 clean:
 	rm -rf *.o $(EXEC)
 
-#supprimer les fichiers *.o et les exécutables
+#delete *.o files and executables
 mrproper: clean
 	rm -rf $(EXEC) 
